@@ -80,41 +80,33 @@ def draw_keyboard(frame):
     scale_y = h / ref_h
     scale = (scale_x + scale_y) / 2.0
     border_thickness = max(2, int(6 * scale))
-
     margin_x = int(50 * scale)
     margin_y = int(50 * scale)
     key_height = int(360 * scale)
     gap = int(4 * scale)
     row_y = margin_y
     width_multiplier = 2.0
-
     for row in keys:
         num_keys = len(row)
         key_width = min(int(110 * scale * width_multiplier),
                         (w - 2 * margin_x - (num_keys - 1) * gap) // num_keys)
         row_width = num_keys * key_width + (num_keys - 1) * gap
         row_x = (w - row_width) // 2
-
         for key in row:
             w_key = key_width
             if key == "SPACE":
                 w_key = int(key_width * 4)
                 row_x = (w - w_key) // 2
-
             cv2.rectangle(frame, (row_x, row_y), (row_x + w_key, row_y + key_height),
                           (255, 255, 255), border_thickness)
-
             text_size = cv2.getTextSize(key, cv2.FONT_HERSHEY_SIMPLEX, 1 * scale, int(2 * scale))[0]
             text_x = row_x + (w_key - text_size[0]) // 2
             text_y = row_y + (key_height + text_size[1]) // 2
             cv2.putText(frame, key, (text_x, text_y),
                         cv2.FONT_HERSHEY_SIMPLEX, 1 * scale, (255, 255, 255), int(2 * scale))
-
             key_positions[key] = (row_x, row_y, row_x + w_key, row_y + key_height)
             row_x += w_key + gap
-
         row_y += key_height + gap
-
     return key_positions, scale
 
 FINGER_TIP = {
@@ -147,13 +139,12 @@ while True:
     ret, frame = cap.read()
     if not ret:
         break
-    frame = cv2.flip(frame, 1)
+    frame = cv2.resize(frame, None, fx=2.0, fy=2.0, interpolation=cv2.INTER_LINEAR)
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = hands.process(rgb_frame)
     key_positions, scale = draw_keyboard(frame)
     current_time = time.time()
     detected_keys = {hand: {finger: None for finger in FINGER_NAMES} for hand in HANDS}
-
     if results.multi_hand_landmarks:
         for hand_idx, hand_landmarks in enumerate(results.multi_hand_landmarks):
             hand_label = results.multi_handedness[hand_idx].classification[0].label.upper()
@@ -178,7 +169,6 @@ while True:
                             cv2.rectangle(frame, (x1, y1), (x2, y2), FINGER_COLORS[finger], 3)
                             break
                     cv2.circle(frame, tip_pos, int(10 * scale), FINGER_COLORS[finger], -1)
-
     for hand in HANDS:
         for finger in FINGER_NAMES:
             key_name = f"{hand}_{finger}"
@@ -207,7 +197,6 @@ while True:
                         print(f"{key_name} Pressed {active_keys[key_name]}")
                 else:
                     key_start_time[key_name] = 0
-
     cv2.imshow("Multi-Finger Two Hands Keyboard With Input", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break

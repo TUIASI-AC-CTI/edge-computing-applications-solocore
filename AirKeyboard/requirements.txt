@@ -1,4 +1,4 @@
-mediapipe==0.10.21
-opencv-python==4.11.0.86
+mediapipe==0.10.21     0.10.15
+opencv-python==4.11.0.86        4.9.0.80
 pynput==1.8.1
 pyautogui==0.9.54
