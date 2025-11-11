@@ -83,7 +83,7 @@ def draw_keyboard(frame):
     border_thickness = max(1, int(3 * scale))
     margin_x = int(30 * scale)
     margin_y = int(30 * scale)
-    key_height = int(200 * scale)
+    key_height = int(120 * scale)
     gap = int(3 * scale)
     row_y = margin_y
 
