@@ -122,6 +122,7 @@ class CameraWindow(Gtk.Window):
         self.last_hand_landmarks = None
         self.lock = threading.Lock()
         self.frame_count = 0
+        self.keys_pressed = set()
 
         threading.Thread(target=self.capture_loop, daemon=True).start()
         threading.Thread(target=self.process_loop, daemon=True).start()
@@ -189,12 +190,19 @@ class CameraWindow(Gtk.Window):
                 for hand_landmarks in self.last_hand_landmarks:
                     mp_drawing.draw_landmarks(display_frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
+            current_pressed = set()
             for tip_pos, color in self.fingertips:
                 cv2.circle(display_frame, tip_pos, 8, color, -1)
                 for key, (x1,y1,x2,y2) in key_positions.items():
                     if x1<tip_pos[0]<x2 and y1<tip_pos[1]<y2:
                         cv2.rectangle(display_frame, (x1,y1),(x2,y2), color, 3)
+                        current_pressed.add(key)
                         break
+
+            new_keys = current_pressed - self.keys_pressed
+            for k in new_keys:
+                print(k, end='', flush=True)
+            self.keys_pressed = current_pressed
 
             frame_rgb = cv2.cvtColor(display_frame, cv2.COLOR_BGR2RGB)
             h, w, c = frame_rgb.shape
